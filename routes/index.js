@@ -152,7 +152,7 @@ router.get('/viewdat', function (req, res) {
   
             var datereg =  JSON.stringify(data[count].order_date)
   
-            datereg = JSON.parse(datereg.replace("T18:30:00.000Z",""))
+            datereg = JSON.parse(datereg.replace("T00:00:00.000Z",""))
   
             var readyDat = `<tr>
             <td>${fulldat.order_id}</td>
