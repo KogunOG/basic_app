@@ -15,8 +15,7 @@ router.post('/login', function (req, res, next) {
 
   if (user_name && user_pass) {
     var query = `
-    SELECT * FROM customer WHERE userid = "${user_name}"`
-
+    SELECT * FROM user WHERE username = "${user_name}"`
 
     database.query(query, function (error, data) {
 
@@ -26,35 +25,28 @@ router.post('/login', function (req, res, next) {
 
           if (data[count].password == user_pass) {
 
-            req.session.user_id = data[count].cust_id
-
-            if (req.session.user_id == 1) {
-              res.redirect("/adminpanel")
-              
-            } else {
-              res.redirect("/")
-            }
-
-
+            req.session.user_id = data[count].id
+            req.session.comp_name = data[count].compname
+            req.session.user_name = data[count].username
+            res.redirect("/")
 
 
           } else {
             res.send('Incorrect Password')
+            res.end()
           }
-
         }
       } else {
         res.send("incorrect username")
+        res.end()
       }
-      res.end()
+
     })
 
   } else {
     res.send('Please Enter Correct Username')
     res.end()
   }
-
-
 });
 
 router.get('/logout', function (req, res, next) {
@@ -67,35 +59,21 @@ router.get('/logout', function (req, res, next) {
 router.post('/savedat', function (req, res, next) {
 
   var order_date = req.body.order_date
-  var company = req.body.company
-  var owner = req.body.owner
   var item = req.body.item
-  var qty = req.body.qty
-
-  var trackingid = req.body.trackingid
-  var req_for_ship = req.body.req_for_ship
-  var box_count = req.body.box_count
-  var specification = req.body.specification
-  var check_qty = req.body.check_qty
+  var count = req.body.count
   var weight = req.body.weight
+  var requsets = req.body.requsets
 
+  var cust_id = parseInt(req.session.user_id)
 
+  if (/^[a-zA-Z _]+$/i.test(item)) {
 
-  var ship_size_len = req.body.ship_size_len
-  var ship_size_breath = req.body.ship_size_breath
-  var ship_size_height = req.body.ship_size_height
-
-  var ship_size = `${ship_size_len}X${ship_size_breath}X${ship_size_height}`
-
-  var cust_id = req.session.user_id
-
-  if (/^[a-z0-9 _]+$/i.test(company) && /^[a-z0-9 _]+$/i.test(owner) && /^[a-zA-Z_]+$/i.test(item) && /^[a-zA-Z _]+$/i.test(trackingid) && /^[a-zA-Z _]+$/i.test(specification) && /^[a-zA-Z _]+$/i.test(check_qty)) {
-
-    var query = `INSERT INTO cust_orders(cust_id,order_date,company,owner,item,qty,weight,req_for_ship,shipment_size,trackingid,box_count,specification,checklist_qty) VALUES ?`;
+    var query = `
+    INSERT INTO Orderitem(order_date,item,count,weight,requests,user_id) VALUES ?
+    `;
     var data = [
-      [cust_id, order_date, company, owner, item, qty, weight, req_for_ship, ship_size, trackingid, box_count, specification, check_qty]
+      [order_date, item, count, weight, requsets, cust_id]
     ];
-
 
     database.query(query, [data], function (err, response) {
       if (err) {
@@ -109,88 +87,111 @@ router.post('/savedat', function (req, res, next) {
   else {
     res.send('Wrong data format')
   }
+});
+
+router.get('/resetpassword', function (req, res) {
+  res.render("resetpassword")
+});
+
+router.post('/resetpassword', function (req, res) {
+
+  var m_no = req.body.m_no
+  var new_pass = req.body.new_pass
+  var c_new_pass = req.body.c_new_pass
+
+  if (new_pass != c_new_pass) {
+    res.redirect('/nomatch')
+  } else {
+    var query = `SELECT * FROM user WHERE phone = "${m_no}"`
+    database.query(query, function (error, data) {
+      if (data.length > 0) {
+        var query = `UPDATE user SET password = "${new_pass}" WHERE id = ${data[0].id};`
+        database.query(query, function (error, confirmation) {
+          if (error) {
+            throw error
+          } else {
+            res.send('Password Updated! Retry login')
+            res.end()
+          }
+        })
+      } else {
+        res.send('Please Enter Correct mobile number')
+        res.end()
+      }
+    })
+  }
+
+});
+
+router.get('/nomatch', function (req, res) {
+  res.send("Passwords do not match Please go back and try again !")
+});
+
+router.get('/viewdat', function (req, res) {
+
+  if(req.session.user_id){
+
+    var userid = parseInt(req.session.user_id)
+
+    var query = `SELECT * FROM Orderitem WHERE user_id = ${userid};`
+  
+    database.query(query, function (error, data) {
+  
+      if (error) {
+        throw error
+      } else {
+  
+        if (data.length > 0) {
+  
+          var finalDat="";
+  
+          for (var count = 0; count < data.length; count++) {
+  
+            var fulldat = data[count]
+            console.log(data[count].order_date)
+  
+            var datereg =  JSON.stringify(data[count].order_date)
+  
+            datereg = JSON.parse(datereg.replace("T18:30:00.000Z",""))
+  
+            var readyDat = `<tr>
+            <td>${fulldat.order_id}</td>
+            <td>${datereg}</td>
+            <td>${fulldat.item}</td>
+            <td>${fulldat.count}</td>
+            <td>${fulldat.weight}</td>
+            <td>${fulldat.requests}</td>
+        </tr>`
+  
+            finalDat += readyDat
+  
+  
+            if (count === parseInt(data.length) - 1) {
+              res.render('table',{ allDat: finalDat })
+            }
+          }
+  
+        } else {
+          res.send("No data")
+  
+        }
+      }
+    })
+
+  }else{
+
+res.redirect('/')
+
+  }
+
+ 
 
 
 
 
 });
 
-router.get('/adminpanel', function async(req, res, next) {
-try {
-  
-  if (!req.session.user_id || req.session.user_id != 1) {
-    res.redirect("/")
-  } else {
-
-
-    var query = `
-    SELECT * FROM cust_orders`
-
-    database.query(query, function (error, data) {
-      if (error) {
-        throw error
-      } else {
-
-        var cust_1_total_qty = 0;
-        var cust_2_total_qty = 0;
-        var cust_2_total_w = 0;
-        var cust_1_total_w = 0;
-        var cust_1_total_box = 0;
-        var cust_2_total_box = 0;
-
-
-let index = 0
-       while (index < data.length) {
-         var newUser = data[index]
-         if (newUser.cust_id == 3) {
-           cust_2_total_qty+=parseInt(newUser.qty)
-           cust_2_total_w+=parseFloat(newUser.weight)
-           cust_2_total_box+= parseInt(newUser.box_count)
-           
-         } else if (newUser.cust_id == 2) {
-           cust_1_total_qty += parseInt(newUser.qty)
-           cust_1_total_w += parseFloat(newUser.weight)
-           cust_1_total_box += parseInt(newUser.box_count)
-          
-         }
-
-         if (index === parseInt(data.length)-1) {
-
-           var total_box = cust_1_total_box + cust_2_total_box 
-           var total_w = cust_1_total_w + cust_2_total_w 
-           var total_qty = cust_1_total_qty + cust_2_total_qty 
-  
-           res.render('index', {
-             title: 'Express', 
-             session: req.session, 
-             cust_1_total_qty: cust_1_total_qty, 
-             cust_2_total_qty: cust_2_total_qty,
-             total_qty:total_qty,
-             cust_2_total_w: cust_2_total_w, 
-             cust_1_total_w: cust_1_total_w, 
-             total_w:total_w,
-             cust_2_total_box: cust_2_total_box, 
-             cust_1_total_box: cust_1_total_box,
-             total_box:total_box
-           });
-       }
-        index++
-       }
-
-      }
-    })
-
-
-  }
-
-} catch (error) {
-  console.log(error)
-}
-  
-
-})
-
-router.get('*',function (req, res) {
+router.get('*', function (req, res) {
   res.redirect('/');
 });
 

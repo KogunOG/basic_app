@@ -24,7 +24,54 @@
                     <h1>Hi User, Welcome</h1>
 
                     <a href="/logout" class="btn btn-primary">Logout</a>
-                
+                    <div style="margin: 25px;">
+
+                    </div>
+                    <a href="/viewdat" class="btn btn-primary">Show Data</a>
+                    
+                    <form method="post" action="/savedat">
+                        <div class="mb-3">
+                            <label>order Date</label>
+                            <input type="date" name="order_date" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Company</label>
+                            <input type="text" value="<%= session.comp_name %>" name="company" class="form-control"
+                                required readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Order owner</label>
+                            <input type="text" value="<%= session.user_name %>" name="owner" class="form-control"
+                                required readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>item/product</label>
+                            <input type="text" name="item" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>EA/count</label>
+                            <input type="number" name="count" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>weight</label>
+                            <input type="number" step="0.001" name="weight" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Requests</label>
+                            <input type="text" name="requsets" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <input type="submit" class="btn btn-primary" value="Save" />
+                        </div>
+                    </form>
+
                     <% } else { %>
 
                         <div class="card">
@@ -39,130 +86,25 @@
                                         <label>Password</label>
                                         <input type="password" name="user_password" class="form-control" />
                                     </div>
-                                    <div class="mb-3">
-                                        <input type="submit" class="btn btn-primary" value="Login" />
+                                    <div class="row g-3">
+
+                                        <div class="col-auto">
+                                            <input type="submit" class="btn btn-primary" value="Login" />
+                                        </div>
+                                        <div class="col-auto">
+                                            <a href="/resetpassword" class="btn btn-outline-primary">
+                                                Forgot Password
+                                            </a>
+                                        </div>
                                     </div>
                                 </form>
+
+
                             </div>
                         </div>
 
-                        <% } %>
-                        <% if(session.user_id) { %>
-                            <% if(session.user_id && session.user_id !=1) { %>
-                               
-                             
-                                        <form method="post" action="/savedat">
-                                            <div class="mb-3">
-                                                <label>order_date</label>
-                                                <input type="date" name="order_date" class="form-control" required/>
-                                            </div>
 
-                                            <div class="mb-3">
-                                                <label>company</label>
-                                                <input type="text" name="company" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>owner</label>
-                                                <input type="text" name="owner" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>item</label>
-                                                <input type="text" name="item" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Quantity</label>
-                                                <input type="number" name="qty" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>weight</label>
-                                                <input type="number" step="0.001" name="weight"
-                                                    class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Request from shipment</label>
-                                                <input type="text" name="req_for_ship" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Tracking ID</label>
-                                                <input type="text" name="trackingid" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Shipment size</label>
-                                                <input type="number" name="ship_size_len" placeholder="length" class="form-control" required/>
-                                                <br />
-                                                <input type="number" name="ship_size_breath" placeholder="breath" class="form-control" required/>
-                                                <br />
-                                                <input type="number" name="ship_size_height" placeholder="height" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Box Count</label>
-                                                <input type="number" name="box_count" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Specification</label>
-                                                <input type="text" name="specification" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label>Checklist Quantity</label>
-                                                <input type="text" name="check_qty" class="form-control" required/>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <input type="submit" class="btn btn-primary" value="Save" />
-                                            </div>
-                                        </form>
-                                
-
-
-                                <% } if(session.user_id == 1) { %>
-
-                                    <table class="table">
-                                        <thead>
-                                          <tr>
-                                            <th scope="col">Item/Customer</th>
-                                            <th scope="col">Customer1</th>
-                                            <th scope="col">Customer2</th>
-                                            <th scope="col">Total</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          <tr>
-                                            <th scope="row">Quantity</th>
-                                            <td><%= cust_1_total_qty %></td>
-                                            <td><%= cust_2_total_qty %></td>
-                                            <td><%= total_qty %></td>
-                                          </tr>
-                                          <tr>
-                                            <th scope="row">Weight</th>
-                                            <td><%= cust_1_total_w %></td>
-                                            <td><%= cust_2_total_w %></td>
-                                            <td><%= total_w %></td>
-                                          </tr>
-                                          <tr>
-                                            <th scope="row">Box Count</th>
-                                            <td><%= cust_1_total_box %></td>
-                                            <td><%= cust_2_total_box %></td>
-                                            <td><%= total_box %></td>
-                                            
-                                          </tr>
-                                        </tbody>
-                                      </table>
-
-
-                                    <% } %>
-
-                                    <% } %>
-
+                        <%}%>
 
             </div>
         </div>
